@@ -1,0 +1,125 @@
+/*
+ * Общий стиль Cubelore и Rowlore — токены.
+ *
+ * Одна основа на два продукта: нейтральные цвета, шрифты, радиусы, тени, статусы — общие;
+ * у каждого продукта свой акцент (data-product на <html>): Cubelore — синий, Rowlore — фиолетово-малиновый.
+ * Тема: data-theme="light" | "dark" на <html>; без атрибута — как в системе.
+ * Шрифты — свои файлы рядом с приложением (контур без интернета), запасной — системный.
+ */
+
+:root {
+  /* Нейтральная основа (из Rowlore, бывшего Анализатора отзывов: ink и линии на rgba(15,23,42)). */
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-2: #f8f9fc;
+  --ink: #0f1525;
+  --ink-2: #3a4359;
+  --ink-3: #6b7691;
+  --line: rgba(15, 23, 42, 0.10);
+  --line-strong: rgba(15, 23, 42, 0.18);
+  --code: #eef1f6;
+
+  /* Смыслы — одни на оба продукта. */
+  --ok: #15804d;      --ok-bg: #e6f4ec;
+  --warn: #b45f08;    --warn-bg: #fdf1e2;
+  --bad: #c62a2f;     --bad-bg: #fde9ea;
+  --info: #2f6fde;    --info-bg: #e8f0fd;
+  --idle: #5f6878;    --idle-bg: #eef0f4;
+
+  /* Акцент продукта: Cubelore по умолчанию. */
+  --accent: #2f6fde;
+  --accent-strong: #1f57b8;
+  --accent-soft: #e8f0fd;
+  --on-accent: #ffffff;
+
+  /* Форма. */
+  --r-chip: 999px;
+  --r-control: 10px;
+  --r-card: 14px;
+  --r-dialog: 16px;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-pop: 0 2px 6px rgba(15, 23, 42, 0.08), 0 24px 56px rgba(15, 23, 42, 0.16);
+
+  /* Шрифты: Manrope (Rowlore) своими файлами; системный — запасной (Cubelore сейчас). */
+  --font: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, "Cascadia Mono", monospace;
+  --t-xs: 12px; --t-s: 13px; --t-m: 14px; --t-l: 16px; --t-xl: 20px; --t-2xl: 26px;
+
+  /* Отступы: шаг 4. */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+:root[data-product="rowlore"] {
+  --accent: #8d4be3;
+  --accent-strong: #c2378f;
+  --accent-soft: rgba(141, 75, 227, 0.10);
+}
+
+/* Тёмная: явная или системная, если тема не выбрана. */
+:root[data-theme="dark"] {
+  --bg: #0e121c;
+  --surface: #171c28;
+  --surface-2: #1d2331;
+  --ink: #eef1f7;
+  --ink-2: #c0c8db;
+  --ink-3: #8a93ad;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --code: #222938;
+  --ok: #4cc48a;      --ok-bg: #16301f;
+  --warn: #f0a54a;    --warn-bg: #3a2b16;
+  --bad: #f2777c;     --bad-bg: #3b1d21;
+  --info: #6b9cf0;    --info-bg: #1d2a45;
+  --idle: #9aa3b2;    --idle-bg: #262c38;
+  --accent: #6b9cf0;
+  --accent-strong: #8db2f5;
+  --accent-soft: #22304a;
+  --on-accent: #0e121c;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.28);
+  --shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 56px rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}
+:root[data-theme="dark"][data-product="rowlore"] {
+  --accent: #b98cf5;
+  --accent-strong: #f07ab8;
+  --accent-soft: rgba(185, 140, 245, 0.16);
+  --on-accent: #0e121c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #0e121c;
+    --surface: #171c28;
+    --surface-2: #1d2331;
+    --ink: #eef1f7;
+    --ink-2: #c0c8db;
+    --ink-3: #8a93ad;
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.16);
+    --code: #222938;
+    --ok: #4cc48a;      --ok-bg: #16301f;
+    --warn: #f0a54a;    --warn-bg: #3a2b16;
+    --bad: #f2777c;     --bad-bg: #3b1d21;
+    --info: #6b9cf0;    --info-bg: #1d2a45;
+    --idle: #9aa3b2;    --idle-bg: #262c38;
+    --accent: #6b9cf0;
+    --accent-strong: #8db2f5;
+    --accent-soft: #22304a;
+    --on-accent: #0e121c;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.28);
+    --shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 56px rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+  :root:not([data-theme])[data-product="rowlore"] {
+    --accent: #b98cf5;
+    --accent-strong: #f07ab8;
+    --accent-soft: rgba(185, 140, 245, 0.16);
+    --on-accent: #0e121c;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

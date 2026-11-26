@@ -1,0 +1,9 @@
+/*
+ * Manrope ships with the frontend bundle (@fontsource-variable/manrope, OFL-1.1): no external font loading.
+ * The package registers the family as "Manrope Variable"; system fonts remain the fallback.
+ */
+@import "@fontsource-variable/manrope";
+
+:root {
+  --font: "Manrope Variable", "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+}

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "./shell";
 import { uiText, uiLocale } from "./i18n";
 import type { ReactNode } from "react";
 import { useEffect, useId, useRef, useState } from "react";
@@ -126,7 +127,7 @@ export function AccessPage({ state, logout, logoSrc, accountActions }: {
           <Typography
             variant="h6"
             sx={{ overflowWrap: "anywhere" }}
-          >Analyzer</Typography>
+          >{PRODUCT_NAME}</Typography>
         </Box>
         <Box sx={{ flexShrink: 0 }}>
           {accountActions || <Button

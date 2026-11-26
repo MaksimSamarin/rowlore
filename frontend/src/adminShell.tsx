@@ -2,7 +2,6 @@ import { uiText, uiLocale } from "./i18n";
 import { InterfaceSettings } from "./interfaceSettings";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  Badge,
   Box,
   Button,
   IconButton,
@@ -11,7 +10,6 @@ import {
   Tooltip,
   Typography
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { Bar, BarChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis } from "recharts";
 import { api } from "./api";
@@ -35,6 +33,7 @@ import { EventSearch, AuditSearch } from "./adminEvents";
 import { ModelSetupNotice } from "./modelSetup";
 import { Models } from "./adminModels";
 import { ReportingView } from "./adminReporting";
+import { AppShell, ShellHead, ShellLink } from "./shell";
 import "./admin.css";
 type Daily = {
   date: string;
@@ -46,20 +45,20 @@ type Summary = {
   };
   daily: Daily[]
 };
-export function AdminScreen({ isAdmin, userId, hash, onChanged, menuButton, accountMenu, logoSrc }: {
+export function AdminScreen({ isAdmin, userId, hash, onChanged, brand, shellFooter, accountMenu }: {
   isAdmin: boolean;
   userId: number;
   hash: string;
   onChanged: () => void;
-  menuButton: ReactNode;
+  brand: ReactNode;
+  shellFooter: ReactNode;
   accountMenu: ReactNode;
-  logoSrc: string;
 }) {
   const section = hash.split("?")[0].split("/")[2] || (isAdmin ? "overview" : "groups");
   useEffect(
     () => {
       window.scrollTo(0, 0);
-      document.querySelector('.admin-nav [aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      document.querySelector('.shell-nav [aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
     },
     [section]
   );
@@ -174,84 +173,56 @@ export function AdminScreen({ isAdmin, userId, hash, onChanged, menuButton, acco
     [uiText("Группы у границы лимита"), near.length, "groups"],
     [uiText("Активные группы"), groups.filter(g => g.is_active).length, "groups"]
   ] as const;
-  return <Box className="page admin-page">
-    <Box className="admin-container">
-      <Box
-        component="header"
-        className="admin-header"
-      >
-        <img
-          className="admin-logo"
-          src={logoSrc}
-          alt="Analyzer"
+  const sectionTitle = sections.find(([key]) => key === section)?.[1] ?? "";
+  return <AppShell
+    className="admin-page"
+    navLabel={uiText("Разделы управления")}
+    brand={brand}
+    mainId="admin-main"
+    nav={<>
+      <ShellLink
+        className="shell-back"
+        label={"← " + uiText("К отчётам")}
+        onClick={() => navigate("#my-reports")}
+      />
+      {sections.map(
+        ([key, title]) => <ShellLink
+          key={key}
+          label={title}
+          current={section === key}
+          count={key === "requests" && pending > 0 ? pending : undefined}
+          onClick={() => navigate(`#/admin/${key}`, true)}
         />
-        <Tooltip title={uiText("К отчётам")}>
-          <Button
-            className="admin-back"
-            color="inherit"
-            onClick={() => navigate("")}
-            aria-label={uiText("К отчётам")}
-          >
-            <ArrowBackIcon fontSize="small" />
-            <span>{uiText("К отчётам")}</span>
-          </Button>
-        </Tooltip>
-        <Typography
-          component="h1"
-          className="admin-title"
-        >
-          {isAdmin ? uiText("Администрирование") : uiText("Управление группами")}
-        </Typography>
-        <Box className="admin-header-controls">
-          <Tooltip title={updated ? uiText("Обновлено {0}", moscowDate(updated, true)) : uiText("Обновить данные")}>
-            <span>
-              <IconButton
-                aria-label={uiText("Обновить")}
-                disabled={busy}
-                onClick={changed}
-              >
-                <RefreshIcon fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title={uiText("Автоматически обновлять данные")}>
-            <Switch
-              size="small"
-              checked={auto}
-              onChange={e => setAuto(e.target.checked)}
-              inputProps={{ "aria-label": uiText("Автообновление") }}
-            />
-          </Tooltip>
-          {menuButton}
-          {accountMenu}
-        </Box>
-      </Box>
-      <Box className="admin-layout">
+      )}
+    </>}
+    footer={<>{shellFooter}{accountMenu}</>}
+  >
+        <ShellHead
+          crumbs={isAdmin ? uiText("Администрирование") : uiText("Управление группами")}
+          title={sectionTitle}
+          actions={<Box className="admin-header-controls">
+            <Tooltip title={updated ? uiText("Обновлено {0}", moscowDate(updated, true)) : uiText("Обновить данные")}>
+              <span>
+                <IconButton
+                  aria-label={uiText("Обновить")}
+                  disabled={busy}
+                  onClick={changed}
+                >
+                  <RefreshIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={uiText("Автоматически обновлять данные")}>
+              <Switch
+                size="small"
+                checked={auto}
+                onChange={e => setAuto(e.target.checked)}
+                inputProps={{ "aria-label": uiText("Автообновление") }}
+              />
+            </Tooltip>
+          </Box>}
+        />
         <Box
-          component="nav"
-          aria-label={uiText("Разделы управления")}
-          className="admin-nav"
-        >
-          {sections.map(
-            ([key, title]) => <Button
-              key={key}
-              color="inherit"
-              disableRipple
-              className={section === key ? "selected" : ""}
-              aria-current={section === key ? "page" : undefined}
-              onClick={() => navigate(`#/admin/${key}`, true)}
-            >
-              {title}
-              {key === "requests" && pending > 0 && <Badge
-                badgeContent={pending}
-                color="primary"
-                className="admin-nav-badge"
-              />}
-            </Button>
-          )}
-        </Box>
-        <Box
-          component="main"
           className="admin-content"
           data-ready={!busy}
           data-section={section}
@@ -259,7 +230,6 @@ export function AdminScreen({ isAdmin, userId, hash, onChanged, menuButton, acco
           <Failure error={error} />
           {isAdmin && section === "overview" && modelsEmpty && <ModelSetupNotice isAdmin />}
           {section === "overview" && isAdmin && <>
-            <Typography variant="h5">{uiText("Обзор")}</Typography>
             {busy && !updated ? <Loading /> : <Box className="admin-kpis">
               {kpis.map(
                 ([label, value, route]) =>
@@ -338,13 +308,13 @@ export function AdminScreen({ isAdmin, userId, hash, onChanged, menuButton, acco
                     <XAxis
                       dataKey="date"
                       tickFormatter={v => String(v).slice(5).split("-").reverse().join(".")}
-                      tick={{ fill: "var(--admin-secondary)", fontSize: 12 }}
+                      tick={{ fill: "var(--ink-3)", fontSize: 12 }}
                     />
                     <ChartTooltip formatter={v => quantity(Number(v))} />
                     <Bar
                       dataKey="total_tokens"
                       name="Токены"
-                      fill="var(--admin-chart)"
+                      fill="var(--accent)"
                       radius={[3, 3, 0, 0]}
                       isAnimationActive={false}
                     />
@@ -403,7 +373,5 @@ export function AdminScreen({ isAdmin, userId, hash, onChanged, menuButton, acco
             isAdmin={isAdmin}
           />}
         </Box>
-      </Box>
-    </Box>
-  </Box>;
+  </AppShell>;
 }

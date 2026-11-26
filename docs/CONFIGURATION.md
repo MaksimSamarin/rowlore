@@ -1,4 +1,4 @@
-English · [Русский](CONFIGURATION.ru.md) · [Analyzer](../README.md)
+English · [Русский](CONFIGURATION.ru.md) · [Rowlore](../README.md)
 
 # Configuration
 
@@ -8,9 +8,9 @@ Copy [`.env.example`](../.env.example) to `.env` beside [`docker-compose.yml`](.
 
 | Setting | What to enter |
 | --- | --- |
-| `APP_SECRET` | A long random string. Analyzer uses it to encrypt saved model API keys. Keep the value when you upgrade and across API and worker replicas. |
+| `APP_SECRET` | A long random string. Rowlore uses it to encrypt saved model API keys. Keep the value when you upgrade and across API and worker replicas. |
 | `POSTGRES_PASSWORD` | The password for the PostgreSQL account set in `POSTGRES_USER`. |
-| `DATABASE_URL` | The address and credentials Analyzer uses to connect to PostgreSQL. For the bundled database, use host `postgres` and port `5432`. Match the user, password, and database name to the `POSTGRES_*` settings. |
+| `DATABASE_URL` | The address and credentials Rowlore uses to connect to PostgreSQL. For the bundled database, use host `postgres` and port `5432`. Match the user, password, and database name to the `POSTGRES_*` settings. |
 
 Generate independent values for `APP_SECRET` and `POSTGRES_PASSWORD` using the [command in the deployment steps](../README.md#deploy). Enter the database password in both database settings.
 
@@ -36,7 +36,7 @@ OPENAI_MODELS=my-local-model
 OPENAI_API_KEY=local
 ```
 
-For **Ollama**, enter its URL and an installed model ID, then select Ollama in Analyzer.
+For **Ollama**, enter its URL and an installed model ID, then select Ollama in Rowlore.
 
 ```dotenv
 OLLAMA_BASE_URL=http://host.docker.internal:11434
@@ -88,7 +88,7 @@ Start with one instance of each Compose service. The default launch runs **six c
 docker compose up -d --build --wait
 ```
 
-When the model runs on a separate endpoint, **8 vCPUs and 16 GB of RAM** are a starting point for Analyzer. The per-container limits in [`docker-compose.yml`](../docker-compose.yml) add up to **6.25 CPUs and about 11.4 GiB of RAM** for the default launch. If the model runs on the same host, budget its compute and memory separately.
+When the model runs on a separate endpoint, **8 vCPUs and 16 GB of RAM** are a starting point for Rowlore. The per-container limits in [`docker-compose.yml`](../docker-compose.yml) add up to **6.25 CPUs and about 11.4 GiB of RAM** for the default launch. If the model runs on the same host, budget its compute and memory separately.
 
 | Service | Containers | CPU limit per container | Memory limit per container |
 | --- | ---: | ---: | ---: |

@@ -46,3 +46,7 @@ The administrator's interface language is stored in PostgreSQL. Clients read it 
 Compose serves the UI and API through a single Nginx port. If you change `MAX_UPLOAD_SIZE_MB`, check the corresponding `client_max_body_size` in [the Nginx configuration](../frontend/nginx.conf). Allow enough room for multipart request overhead.
 
 Separate inspection and analysis workers can be scaled independently. Account for the model provider's rate limits and PostgreSQL connections when adding replicas. [Hardware and scaling](CONFIGURATION.md#hardware-and-scaling)
+
+## Interface
+
+Colors, radii, shadows, and fonts come from the design tokens in [`frontend/src/tokens.css`](../frontend/src/tokens.css), shared with the sibling product Cubelore. The `data-product="rowlore"` attribute selects the Rowlore accent, and `data-theme` selects the light or dark theme. Without a saved choice, the theme follows the system and is applied before the first paint. The MUI palette in [`theme.tsx`](../frontend/src/theme.tsx) reads these CSS variables instead of repeating their values. The Manrope font ships with the build from `@fontsource-variable/manrope`, so the interface needs no external font requests.

@@ -1,10 +1,27 @@
 ﻿<!doctype html>
-<html lang="en">
+<html lang="en" data-product="rowlore">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/review-pixel.png" />
-    <title>Analyzer</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/rowlore-icon-32.png" />
+    <link rel="icon" type="image/svg+xml" href="/rowlore-mark.svg" />
+    <title>Rowlore</title>
+    <script>
+      // The theme is applied before the first paint. Without a saved choice, the system theme is used.
+      (function () {
+        var theme = null;
+        try {
+          theme = localStorage.getItem("rowlore_theme");
+          if (theme !== "light" && theme !== "dark") {
+            theme = localStorage.getItem("review_analyzer_theme_preference") === "dark" ? "dark" : null;
+          }
+        } catch (e) { /* storage is unavailable */ }
+        if (!theme) {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

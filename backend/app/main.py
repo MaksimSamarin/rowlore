@@ -152,7 +152,7 @@ SESSION_USER_CACHE_TTL_SEC = max(0.0, float(os.getenv("SESSION_USER_CACHE_TTL_SE
 SESSION_USER_CACHE_MAX = max(100, int(os.getenv("SESSION_USER_CACHE_MAX", "5000")))
 _SESSION_USER_CACHE: dict[str, tuple[float, dict[str, Any] | None]] = {}
 
-app = FastAPI(title="Analyzer API", version=APP_VERSION)
+app = FastAPI(title="Rowlore API", version=APP_VERSION)
 
 
 logger = logging.getLogger("review_analyzer.api")
