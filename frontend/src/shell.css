@@ -3,10 +3,13 @@
   display: grid;
   grid-template-columns: 216px minmax(0, 1fr);
   min-height: 100dvh;
-  /* Колонка меню тянется на всю высоту страницы, даже когда само меню липкое. */
-  background: linear-gradient(90deg, var(--surface) 0 215px, var(--line) 215px 216px, var(--bg) 216px);
   color: var(--ink);
   overflow: visible;
+}
+/* Колонка меню тянется на всю высоту страницы, даже когда само меню липкое.
+   Два класса — чтобы правило не зависело от порядка подключения styles.css. */
+.page.app-shell {
+  background: linear-gradient(90deg, var(--surface) 0 215px, var(--line) 215px 216px, var(--bg) 216px);
 }
 
 .shell-skip {
@@ -193,7 +196,8 @@
 .shell-actions { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
 
 @media (max-width: 899px) {
-  .app-shell { grid-template-columns: minmax(0, 1fr); background: var(--bg); }
+  .app-shell { grid-template-columns: minmax(0, 1fr); }
+  .page.app-shell { background: var(--bg); }
   .shell-nav {
     position: sticky;
     top: 0;
