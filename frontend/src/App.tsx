@@ -61,7 +61,6 @@ import {
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import CloseIcon from "@mui/icons-material/Close";
@@ -966,7 +965,6 @@ function App() {
   const resultsBlockRef = useRef<HTMLDivElement | null>(null);
   const scrolledReportIdRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [showAllReports, setShowAllReports] = useState(false);
   const [error, setError] = useState<string>("");
   const [actionToast, setActionToast] = useState<{ message: string; severity: "success" | "warning" | "error" } | null>(null);
   const [deletingAllReports, setDeletingAllReports] = useState(false);
@@ -1774,6 +1772,8 @@ function App() {
       setSelectedReportMeta(meta);
       setSelectedReportId(reportId);
       setSelectedReportAnalysis(analysis);
+      // С экрана «Мои отчёты» отчёт открывается на экране анализа: там запуск и результат.
+      if (window.location.hash === "#my-reports") navigate("#analysis-run");
       // Принудительный рефреш активных отчётов — selectedLaunchReport
       // мгновенно подтянется из обновлённого reports[] для блоков 3/4.
       void loadActiveReports(true);
@@ -2147,10 +2147,8 @@ function App() {
     ];
   }, [activeResult]);
 
-  const visibleReports = useMemo(() => {
-    if (showAllReports) return reports;
-    return reports.slice(0, 3);
-  }, [reports, showAllReports]);
+  // «Мои отчёты» — отдельный экран, поэтому список показывается целиком.
+  const visibleReports = reports;
 
 
   // Live-превью: пока отчёт в работе (running/paused/queued), тянем analysis
@@ -2500,9 +2498,11 @@ function App() {
     { id: "prompt-template", label: uiText("Шаблон"), icon: <DescriptionIcon fontSize="small" /> },
     { id: "analysis-run", label: uiText("Запуск"), icon: <PlayArrowIcon fontSize="small" /> },
     ...(activeResult?.summary ? [{ id: "analysis-result", label: uiText("Результат"), icon: <DownloadIcon fontSize="small" /> }] : []),
-    { id: "my-reports", label: uiText("Мои отчёты"), icon: <FolderOpenIcon fontSize="small" /> },
   ];
-  const selectedSection = sections.find((section) => `#${section.id}` === locationHash)?.id ?? sections[0].id;
+  // Два экрана: «Мои отчёты» и анализ из шагов. Без адреса открывается анализ.
+  const reportsView = locationHash === "#my-reports";
+  const selectedSection = reportsView ? "my-reports"
+    : sections.find((section) => `#${section.id}` === locationHash)?.id ?? sections[0].id;
   // Шаги мастера в меню: пройденный шаг отмечается галочкой.
   const workflowSteps: Record<string, { step: number; done: boolean }> = {
     "data-import": { step: 1, done: Boolean(fileInfo) && fileInspectStatus === "ready" && Boolean(model) },
@@ -2519,6 +2519,14 @@ function App() {
       mainId="workspace-main"
       skipLabel={uiText("К анализу")}
       nav={<>
+        <ShellLink
+          href="#my-reports"
+          current={reportsView}
+          icon={<FolderOpenIcon fontSize="small" />}
+          label={uiText("Мои отчёты")}
+          count={reports.filter((r) => ["queued", "running", "paused"].includes(r.status)).length || undefined}
+        />
+        <span className="shell-divider" aria-hidden="true" />
         {sections.map((section) => (
           <ShellLink
             key={section.id}
@@ -2541,8 +2549,13 @@ function App() {
       </>}
       footer={<>{shellFooter}{accountMenu}</>}
     >
-          <ShellHead title={uiText("Анализ отзывов")} />
+          <ShellHead
+            title={reportsView ? uiText("Мои отчёты") : uiText("Анализ отзывов")}
+            sub={reportsView ? uiText("Ход обработки, результаты и выгрузки · время МСК") : undefined}
+            actions={reportsView ? <Button variant="contained" startIcon={<AddIcon />} href="#data-import">{uiText("Новый анализ")}</Button> : undefined}
+          />
           {user.role === "admin" && modelCatalogReady && providers.length === 0 && <ModelSetupNotice isAdmin />}
+          {!reportsView && <>
         {accessState.has_access && (
         <Card className="card workspace-section" id="data-import">
         <CardContent>
@@ -3644,12 +3657,13 @@ function App() {
           </Card>
           </Box>
         )}
+          </>}
 
-        {accessState.has_access && (
+        {reportsView && accessState.has_access && (
         <Card className="card workspace-section" id="my-reports">
           <CardContent>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" component="h2">{uiText("Мои отчёты")}</Typography>
+              <Typography variant="body2" color="text.secondary">{uiText("Отчётов: {0}", reports.length)}</Typography>
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Tooltip title={uiText("Обновить")}>
                   <IconButton size="small" onClick={refreshReportsClick} aria-label={uiText("Обновить")}>
@@ -3684,8 +3698,8 @@ function App() {
                     onChange={e => setCheckedReportIds(e.target.checked ? visibleReports.filter(r => !["queued", "running", "paused"].includes(r.status)).map(r => r.id) : [])} /></TableCell>
                   <TableCell sx={{ width: "23%" }}>{uiText("Отчёт")}</TableCell>
                   <TableCell sx={{ width: "16%" }}>{uiText("Создан")}</TableCell>
-                  <TableCell sx={{ width: "10%" }}>{uiText("Статус")}</TableCell>
-                  <TableCell sx={{ width: "28%" }}>{uiText("Прогресс")}</TableCell>
+                  <TableCell sx={{ width: "12%" }}>{uiText("Статус")}</TableCell>
+                  <TableCell sx={{ width: "26%" }}>{uiText("Прогресс")}</TableCell>
                   <TableCell sx={{ width: "4%" }} align="center">{uiText("Инфо")}</TableCell>
                   <TableCell sx={{ width: "19%" }} align="right">{uiText("Действия")}</TableCell>
                 </TableRow>
@@ -3865,28 +3879,6 @@ function App() {
             </TableContainer>
             ) : (
               <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>{uiText("Пока нет отчётов")}</Typography>
-            )}
-            {reports.length > 3 && (
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 1.25 }}>
-                <Button
-                  size="small"
-                  variant="text"
-                  onClick={() => setShowAllReports((v) => !v)}
-                  endIcon={showAllReports ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                  sx={{
-                    textTransform: "none",
-                    color: "text.secondary",
-                    fontWeight: 500,
-                    px: 2,
-                    py: 0.5,
-                    borderRadius: 999,
-                    transition: "background-color 180ms ease, color 180ms ease",
-                    "&:hover": { backgroundColor: "var(--surface-2)", color: "text.primary" },
-                  }}
-                >
-                  {showAllReports ? uiText("Свернуть") : uiText("Показать ещё {0}", reports.length - 3)}
-                </Button>
-              </Box>
             )}
           </CardContent>
         </Card>

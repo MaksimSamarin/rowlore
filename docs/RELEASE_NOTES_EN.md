@@ -4,6 +4,7 @@
 
 - **Rowlore.** Analyzer is now called Rowlore, with a new menu mark and tab icon.
 - **Side menu.** Analysis and administration share one layout with a menu on the left. The Data & model, Template, and Run analysis steps are checked off as they become ready. The theme switch and the account menu sit at the bottom of the menu.
+- **My reports.** The report list is a separate screen at the top of the menu. It shows every report with its progress and downloads, and the menu counts reports in progress.
 - **Consistent look.** Both screens use one set of colors, the same status colors, and Manrope with tabular figures. The font ships with the build and is not loaded from the internet.
 - **System theme.** Until a user picks a theme, the interface follows the system setting. A previously chosen dark theme is kept.
 - **Upgrade.** Data, `.env` settings, and volumes are preserved. See “Upgrade from Analyzer” in the README.
