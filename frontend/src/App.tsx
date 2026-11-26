@@ -2220,7 +2220,7 @@ function App() {
       <Box component="main" className="workspace-login-content">
           <Box className="login-brand">
             <img
-              src={logoSrc === "/rowlore-mark.svg" ? "/rowlore-logo-256.png" : logoSrc}
+              src={logoSrc}
               alt=""
               width={96}
               height={96}

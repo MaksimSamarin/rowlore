@@ -1,6 +1,6 @@
 [English](README.md) · Русский
 
-<p align="center"><img src="docs/brand/rowlore-logo-128.png" width="96" height="96" alt="Знак Rowlore"></p>
+<p align="center"><img src="frontend/public/rowlore-mark.svg" width="96" height="96" alt="Знак Rowlore"></p>
 
 <h1 align="center">Rowlore</h1>
 

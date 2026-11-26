@@ -84,7 +84,6 @@ code, kbd, pre, samp { font-family: var(--mono); }
   border-bottom: 1px solid var(--line);
 }
 .access-logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
-.access-logo[src$=".png"] { image-rendering: pixelated; }
 .access-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);

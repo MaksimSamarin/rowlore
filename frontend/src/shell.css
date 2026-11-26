@@ -49,7 +49,6 @@
   min-width: 0;
 }
 .shell-brand-mark { width: 26px; height: 26px; flex: none; object-fit: contain; }
-.shell-brand-mark[src$=".png"] { image-rendering: pixelated; }
 
 .shell-links { display: flex; flex-direction: column; gap: 2px; }
 .shell-links .shell-divider { height: 1px; margin: 8px 10px; background: var(--line); }

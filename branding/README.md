@@ -4,7 +4,7 @@ Place `logo.png` or `logo.svg` in this directory as a local override. Rowlore us
 
 Compose mounts this directory in the frontend as read-only. Reload the page to see the new logo.
 
-To change the tab icon, replace `frontend/public/rowlore-pixel-32.png` and rebuild the frontend. The full set of Rowlore marks is in [docs/brand](../docs/brand/).
+The tab icon is `frontend/public/rowlore-mark.svg` with the PNG fallback `frontend/public/rowlore-icon-32.png`. To change it, replace both files and rebuild the frontend.
 
 ```sh
 docker compose up -d --build frontend
