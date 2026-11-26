@@ -62,4 +62,4 @@ def test_version_is_2_x() -> None:
 
 def test_current_release_version() -> None:
     from app import __version__
-    assert __version__ == "2.2.0"
+    assert __version__ == "2.3.0"
