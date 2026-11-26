@@ -101,7 +101,7 @@ import type {
 import "./styles.css";
 import "./workspace.css";
 import { useThemeMode } from "./theme";
-import { AppShell, Brand, PRODUCT_NAME, ShellFooter, ShellHead, ShellLink } from "./shell";
+import { AppShell, Brand, PRODUCT_NAME, ShellFooter, ShellHead, ShellLink, ShellSteps } from "./shell";
 import { ReportStatusChip } from "./statusChip";
 import { AccessPage, AccessRequestForm, GroupUsage, accessCall, type AccessState, type AccessGroup } from "./access";
 
@@ -2209,33 +2209,25 @@ function App() {
   if (!user) {
     return (
       <Box className="page workspace-login">
-      <Box className="login-aurora" aria-hidden="true" />
-      <Box className="login-tools">
-        <Tooltip title={mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема")}>
-          <IconButton className="workspace-icon-button" onClick={toggle} aria-label={mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема")}>
-            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-          </IconButton>
-        </Tooltip>
-      </Box>
       <Box component="main" className="workspace-login-content">
-          <Box className="login-brand">
-            <img
-              src={logoSrc}
-              alt=""
-              width={96}
-              height={96}
-              className="login-logo"
-              onError={handleLogoError}
-            />
-            <Typography component="div" className="login-wordmark">{PRODUCT_NAME}</Typography>
-            <Typography component="p" className="login-tagline">{uiText("Ad hoc аналитика таблиц с помощью ИИ")}</Typography>
-          </Box>
-          <Card className="card login-card" sx={{ width: "100%", maxWidth: 480 }}>
+          {/* Как вход Cubelore: знак, имя и подпись внутри карточки, тема — ссылкой внизу. */}
+          <Card className="card login-card" sx={{ width: "100%", maxWidth: 400 }}>
             <CardContent>
               <Stack spacing={2}>
-                <Typography variant="h5" component="h1">
-                  {authMode === "register" ? uiText("Регистрация") : uiText("Вход")}
-                </Typography>
+                <Box className="login-brand">
+                  <img
+                    src={logoSrc}
+                    alt=""
+                    width={72}
+                    height={72}
+                    className="login-logo"
+                    onError={handleLogoError}
+                  />
+                  <Typography component="h1" className="login-wordmark">{PRODUCT_NAME}</Typography>
+                  <Typography component="p" className="login-tagline">
+                    {authMode === "register" ? uiText("Регистрация") : uiText("Ad hoc аналитика таблиц с помощью ИИ")}
+                  </Typography>
+                </Box>
                 {authConfig?.local_auth_enabled && (
                   <Stack component="form" spacing={2} onSubmit={(event) => { event.preventDefault(); void doAuth(); }}>
                     <TextField
@@ -2273,6 +2265,9 @@ function App() {
                 {authConfig && !authConfig.sso_enabled && !authConfig.local_auth_enabled && (
                   <Alert severity="info">{uiText("Вход отключён. Обратитесь к администратору.")}</Alert>
                 )}
+                <Link component="button" type="button" underline="hover" className="login-theme" onClick={toggle}>
+                  {mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема")}
+                </Link>
               </Stack>
             </CardContent>
           </Card>
@@ -2494,21 +2489,22 @@ function App() {
     onChanged={() => { void loadUsage(); void accessCall<AccessState>("/access/status").then(applyAccessState); }} />;
 
   const sections = [
-    { id: "data-import", label: uiText("Данные и модель"), icon: <CloudUploadIcon fontSize="small" /> },
-    { id: "prompt-template", label: uiText("Шаблон"), icon: <DescriptionIcon fontSize="small" /> },
-    { id: "analysis-run", label: uiText("Запуск"), icon: <PlayArrowIcon fontSize="small" /> },
-    ...(activeResult?.summary ? [{ id: "analysis-result", label: uiText("Результат"), icon: <DownloadIcon fontSize="small" /> }] : []),
+    { id: "data-import", label: uiText("Данные и модель") },
+    { id: "prompt-template", label: uiText("Шаблон") },
+    { id: "analysis-run", label: uiText("Запуск") },
+    ...(activeResult?.summary ? [{ id: "analysis-result", label: uiText("Результат") }] : []),
   ];
-  // Два экрана: «Мои отчёты» и анализ из шагов. Без адреса открывается анализ.
+  // Два экрана: «Мои отчёты» и анализ. Без адреса открывается анализ.
   const reportsView = locationHash === "#my-reports";
-  const selectedSection = reportsView ? "my-reports"
-    : sections.find((section) => `#${section.id}` === locationHash)?.id ?? sections[0].id;
-  // Шаги мастера в меню: пройденный шаг отмечается галочкой.
-  const workflowSteps: Record<string, { step: number; done: boolean }> = {
-    "data-import": { step: 1, done: Boolean(fileInfo) && fileInspectStatus === "ready" && Boolean(model) },
-    "prompt-template": { step: 2, done: Boolean(promptEditorValue.trim()) },
-    "analysis-run": { step: 3, done: selectedLaunchStatus === "completed" },
+  const selectedSection = sections.find((section) => `#${section.id}` === locationHash)?.id ?? sections[0].id;
+  // Шаги анализа — над разделами, как в общем макете; пройденный шаг отмечается галочкой.
+  const stepDone: Record<string, boolean> = {
+    "data-import": Boolean(fileInfo) && fileInspectStatus === "ready" && Boolean(model),
+    "prompt-template": Boolean(promptEditorValue.trim()),
+    "analysis-run": selectedLaunchStatus === "completed",
+    "analysis-result": selectedLaunchStatus === "completed",
   };
+  const activeReportCount = reports.filter((r) => ["queued", "running", "paused"].includes(r.status)).length;
 
   return (
     <>
@@ -2519,33 +2515,12 @@ function App() {
       mainId="workspace-main"
       skipLabel={uiText("К анализу")}
       nav={<>
-        <ShellLink
-          href="#my-reports"
-          current={reportsView}
-          icon={<FolderOpenIcon fontSize="small" />}
-          label={uiText("Мои отчёты")}
-          count={reports.filter((r) => ["queued", "running", "paused"].includes(r.status)).length || undefined}
-        />
-        <span className="shell-divider" aria-hidden="true" />
-        {sections.map((section) => (
-          <ShellLink
-            key={section.id}
-            href={`#${section.id}`}
-            current={selectedSection === section.id}
-            icon={section.icon}
-            label={section.label}
-            step={workflowSteps[section.id]?.step}
-            done={workflowSteps[section.id]?.done}
-          />
-        ))}
-        {canManage && <>
-          <span className="shell-divider" aria-hidden="true" />
-          <ShellLink
-            href="#/admin"
-            icon={<SettingsIcon fontSize="small" />}
-            label={user.role === "admin" ? uiText("Администрирование") : uiText("Мои группы")}
-          />
-        </>}
+        <ShellLink href="#my-reports" current={reportsView} label={uiText("Мои отчёты")} count={activeReportCount || undefined} />
+        <ShellLink href="#data-import" current={!reportsView} label={uiText("Анализ")} />
+        {canManage && <ShellLink
+          href="#/admin"
+          label={user.role === "admin" ? uiText("Администрирование") : uiText("Мои группы")}
+        />}
       </>}
       footer={<>{shellFooter}{accountMenu}</>}
     >
@@ -2554,6 +2529,16 @@ function App() {
             sub={reportsView ? uiText("Ход обработки, результаты и выгрузки · время МСК") : undefined}
             actions={reportsView ? <Button variant="contained" startIcon={<AddIcon />} href="#data-import">{uiText("Новый анализ")}</Button> : undefined}
           />
+          {!reportsView && <ShellSteps
+            label={uiText("Шаги анализа")}
+            steps={sections.map((section) => ({
+              id: section.id,
+              label: section.label,
+              href: `#${section.id}`,
+              done: stepDone[section.id] ?? false,
+              current: selectedSection === section.id,
+            }))}
+          />}
           {user.role === "admin" && modelCatalogReady && providers.length === 0 && <ModelSetupNotice isAdmin />}
           {!reportsView && <>
         {accessState.has_access && (

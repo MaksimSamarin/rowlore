@@ -10,7 +10,6 @@ import {
   Tooltip,
   Typography
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { Bar, BarChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis } from "recharts";
 import { api } from "./api";
@@ -182,11 +181,10 @@ export function AdminScreen({ isAdmin, userId, hash, onChanged, brand, shellFoot
     mainId="admin-main"
     nav={<>
       <ShellLink
-        icon={<ArrowBackIcon fontSize="small" />}
-        label={uiText("К отчётам")}
-        onClick={() => navigate("")}
+        className="shell-back"
+        label={"← " + uiText("К отчётам")}
+        onClick={() => navigate("#my-reports")}
       />
-      <span className="shell-divider" aria-hidden="true" />
       {sections.map(
         ([key, title]) => <ShellLink
           key={key}

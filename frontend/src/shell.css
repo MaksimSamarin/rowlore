@@ -51,7 +51,6 @@
 .shell-brand-mark { width: 26px; height: 26px; flex: none; object-fit: contain; }
 
 .shell-links { display: flex; flex-direction: column; gap: 2px; }
-.shell-links .shell-divider { height: 1px; margin: 8px 10px; background: var(--line); }
 
 .shell-link,
 .shell-link.MuiButtonBase-root {
@@ -80,11 +79,10 @@
   bottom: 8px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--accent);
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
 }
-.shell-link .MuiSvgIcon-root { color: var(--ink-3); flex: none; }
-.shell-link.on .MuiSvgIcon-root { color: var(--accent); }
 .shell-link-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.shell-back { margin-bottom: 10px; color: var(--ink-3); }
 .shell-count {
   margin-left: auto;
   font-size: 11px;
@@ -94,21 +92,46 @@
   padding: 1px 7px;
 }
 
-/* Нумерованные шаги мастера. */
+/* Нумерованные шаги мастера (как .steps в общем макете): над разделами анализа, липкие. */
+.shell-steps {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  padding: 8px 0;
+  background: var(--bg);
+}
 .shell-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-size: var(--t-s);
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .18s, color .18s;
+}
+.shell-step:hover { border-color: var(--accent); color: var(--ink); }
+.shell-step-no {
   width: 22px;
   height: 22px;
-  flex: none;
   border-radius: 50%;
   display: grid;
   place-items: center;
   background: var(--idle-bg);
   color: var(--ink-2);
   font-size: 12px;
-  font-weight: 700;
 }
-.shell-link.done .shell-step { background: var(--ok-bg); color: var(--ok); }
-.shell-link.on .shell-step { background: var(--accent); color: var(--on-accent); }
+.shell-step.done { color: var(--ink-2); }
+.shell-step.done .shell-step-no { background: var(--ok-bg); color: var(--ok); }
+.shell-step.on { color: var(--ink); border-color: var(--accent); }
+.shell-step.on .shell-step-no { background: var(--accent); color: var(--on-accent); }
 
 .shell-spacer { flex: 1; min-height: 16px; }
 
@@ -132,18 +155,7 @@
   text-align: left;
 }
 .shell-account:hover { background: var(--surface-2); }
-.shell-avatar {
-  width: 30px;
-  height: 30px;
-  flex: none;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 800;
-  font-size: 13px;
-}
+.shell-compact-icon { display: none; }
 .shell-account-text { display: flex; flex-direction: column; min-width: 0; }
 .shell-account-name.MuiTypography-root {
   color: var(--ink);
@@ -157,8 +169,7 @@
 .shell-account-caption.MuiTypography-root { color: var(--ink-3); font-size: var(--t-xs); }
 .shell-logout.MuiButtonBase-root {
   align-self: flex-start;
-  gap: 6px;
-  margin-left: 48px;
+  margin-left: 8px;
   padding: 2px 0;
   color: var(--accent);
   font: 600 var(--t-xs)/1.4 var(--font);
@@ -221,15 +232,16 @@
     gap: 4px;
     padding-bottom: 2px;
   }
-  .shell-links .shell-divider { width: 1px; height: auto; margin: 6px 4px; }
   .shell-link, .shell-link.MuiButtonBase-root { width: auto; flex: none; white-space: nowrap; }
   .shell-link.on::before { display: none; }
   .shell-spacer { display: none; }
   .shell-theme.MuiButtonBase-root { width: 40px; justify-content: center; padding: 8px; }
   .shell-theme .shell-link-label { display: none; }
+  .shell-compact-icon { display: grid; place-items: center; color: var(--ink-2); }
   .shell-who { flex-direction: row; align-items: center; border: 0; margin: 0; padding: 0; }
-  .shell-account.MuiButtonBase-root { width: auto; padding: 4px; }
+  .shell-account.MuiButtonBase-root { width: 40px; justify-content: center; padding: 8px; }
   .shell-account-text, .shell-logout { display: none !important; }
   .shell-main { padding: 16px 14px 40px; }
   .shell-title.MuiTypography-root { font-size: var(--t-xl); }
+  .shell-steps { position: static; padding: 0; }
 }

@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { Box, ButtonBase, Typography } from "@mui/material";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import LogoutIcon from "@mui/icons-material/Logout";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import { uiText } from "./i18n";
 import "./shell.css";
 
@@ -22,22 +22,17 @@ export function Brand({ logoSrc, onLogoError, className = "" }: {
 
 type LinkProps = {
   label: ReactNode;
-  icon?: ReactNode;
   href?: string;
   onClick?: () => void;
   current?: boolean;
-  /** Номер шага мастера; done — шаг пройден. */
-  step?: number;
-  done?: boolean;
   count?: number;
   className?: string;
 };
 
-/** Пункт бокового меню: ссылка на раздел или кнопка. */
-export function ShellLink({ label, icon, href, onClick, current, step, done, count, className = "" }: LinkProps) {
-  const classes = ["shell-link", current ? "on" : "", step ? "step" : "", done ? "done" : "", className].filter(Boolean).join(" ");
+/** Пункт бокового меню: ссылка на раздел или кнопка. Как в Cubelore — текстом, без иконок. */
+export function ShellLink({ label, href, onClick, current, count, className = "" }: LinkProps) {
+  const classes = ["shell-link", current ? "on" : "", className].filter(Boolean).join(" ");
   const content = <>
-    {step ? <span className="shell-step" aria-hidden="true">{done ? "✓" : step}</span> : icon}
     <span className="shell-link-label">{label}</span>
     {count ? <span className="shell-count">{count}</span> : null}
   </>;
@@ -49,7 +44,27 @@ export function ShellLink({ label, icon, href, onClick, current, step, done, cou
   </ButtonBase>;
 }
 
-/** Низ меню: тема и пользователь. Блок пользователя открывает меню аккаунта. */
+export type ShellStep = { id: string; label: string; href: string; done: boolean; current: boolean };
+
+/** Нумерованные шаги мастера: пройденный — галочка, текущий — акцент. */
+export function ShellSteps({ label, steps }: { label: string; steps: ShellStep[] }) {
+  return <Box component="nav" className="shell-steps" aria-label={label}>
+    {steps.map((step, index) => <a
+      key={step.id}
+      href={step.href}
+      className={["shell-step", step.done ? "done" : "", step.current ? "on" : ""].filter(Boolean).join(" ")}
+      aria-current={step.current ? "step" : undefined}
+    >
+      <span className="shell-step-no" aria-hidden="true">{step.done ? "✓" : index + 1}</span>
+      {step.label}
+    </a>)}
+  </Box>;
+}
+
+/**
+ * Низ меню: тема и пользователь, как в Cubelore. Имя открывает меню аккаунта
+ * (расход токенов, правила, заметки о релизе). На узком экране — значки вместо подписей.
+ */
 export function ShellFooter({ mode, onToggleTheme, name, caption, menuOpen, onOpenMenu, onLogout }: {
   mode: "light" | "dark";
   onToggleTheme: () => void;
@@ -61,12 +76,12 @@ export function ShellFooter({ mode, onToggleTheme, name, caption, menuOpen, onOp
 }) {
   const themeLabel = mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема");
   return <Box className="shell-footer">
-    <ShellLink
-      className="shell-theme"
-      icon={mode === "dark" ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
-      label={themeLabel}
-      onClick={onToggleTheme}
-    />
+    <ButtonBase className="shell-link shell-theme" onClick={onToggleTheme} aria-label={themeLabel} disableRipple>
+      <span className="shell-compact-icon" aria-hidden="true">
+        {mode === "dark" ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
+      </span>
+      <span className="shell-link-label">{themeLabel}</span>
+    </ButtonBase>
     <Box className="shell-who">
       <ButtonBase
         className="shell-account"
@@ -76,22 +91,15 @@ export function ShellFooter({ mode, onToggleTheme, name, caption, menuOpen, onOp
         aria-expanded={menuOpen}
         disableRipple
       >
-        <span className="shell-avatar" aria-hidden="true">{initial(name)}</span>
+        <span className="shell-compact-icon" aria-hidden="true"><PersonOutlineIcon fontSize="small" /></span>
         <span className="shell-account-text">
           <Typography component="span" className="shell-account-name">{name}</Typography>
           <Typography component="span" className="shell-account-caption">{caption}</Typography>
         </span>
       </ButtonBase>
-      <ButtonBase className="shell-logout" onClick={onLogout} disableRipple>
-        <LogoutIcon fontSize="inherit" />
-        <span>{uiText("Выйти")}</span>
-      </ButtonBase>
+      <ButtonBase className="shell-logout" onClick={onLogout} disableRipple>{uiText("Выйти")}</ButtonBase>
     </Box>
   </Box>;
-}
-
-function initial(name: ReactNode): string {
-  return typeof name === "string" && name.trim() ? name.trim()[0].toUpperCase() : "•";
 }
 
 /** Оболочка экранов: меню слева, содержимое справа. На узком экране меню уходит наверх. */
