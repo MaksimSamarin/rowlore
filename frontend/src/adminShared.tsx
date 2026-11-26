@@ -1,3 +1,4 @@
+import { StatusChip } from "./statusChip";
 import { uiText, uiLocale } from "./i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import {
@@ -269,12 +270,13 @@ export function StateChip({ row }: {
   const errors = row.has_errors || !!row.failed_rows;
   const label = row.status_label || (all ? uiText("Ошибка: {0}", quantity(row.failed_rows)) : row.status === "completed" && errors
     ? uiText("Готов, ошибок: {0}", quantity(row.failed_rows)) : statuses[row.status] || row.status);
-  return <Chip
-    size="small"
+  return <StatusChip
     label={label}
     title={row.retry_hint || undefined}
-    color={all || row.status === "failed" ? "error"
-      : errors || row.status === "paused" ? "warning" : row.status === "completed" ? "success" : "default"}
-    variant="outlined"
+    tone={all || row.status === "failed" ? "bad"
+      : errors || row.status === "paused" || row.status === "running" ? "warn"
+        : row.status === "completed" ? "ok" : row.status === "queued" ? "info" : "idle"}
+    live={row.status === "running"}
+    line={row.status === "paused"}
   />;
 }

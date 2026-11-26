@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./tokens.css";
+import "./fonts.css";
 import { api } from "./api";
 import { setUiLanguage } from "./i18n";
 import { AppThemeProvider } from "./theme";

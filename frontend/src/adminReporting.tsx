@@ -121,7 +121,8 @@ type Data = {
     previous_to: string
   }
 };
-const colors = ["#47658d", "#21806f", "#9074ad", "#b28522", "#508b9a", "#6a7d43"];
+// Первая серия — акцент продукта, остальные — различимые оттенки для категорий.
+const colors = ["var(--accent)", "var(--info)", "#21806f", "#b28522", "var(--accent-strong)", "#6a7d43"];
 function dateOnly(value: string) { return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Moscow" }).format(new Date(value)); }
 function addDay(value: string) {
   const d = new Date(value + "T12:00:00Z");

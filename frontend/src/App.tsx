@@ -102,6 +102,8 @@ import type {
 import "./styles.css";
 import "./workspace.css";
 import { useThemeMode } from "./theme";
+import { AppShell, Brand, PRODUCT_NAME, ShellFooter, ShellHead, ShellLink } from "./shell";
+import { ReportStatusChip } from "./statusChip";
 import { AccessPage, AccessRequestForm, GroupUsage, accessCall, type AccessState, type AccessGroup } from "./access";
 
 import { AdminScreen, navigate, useLocationHash } from "./admin";
@@ -112,7 +114,7 @@ const LAST_MODEL_KEY = "review_analyzer_last_model";
 // При апдейте APP_VERSION диалог «Заметки о релизе» автоматически
 // открывается один раз для каждого пользователя (см. useEffect ниже).
 const RELEASE_NOTES_SEEN_VERSION_KEY = "review_analyzer_release_notes_seen_version";
-const APP_VERSION = "2.2.0";
+const APP_VERSION = "2.3.0";
 
 function formatQueueHint(position: number | null | undefined): string {
   if (typeof position !== "number" || position < 0) return "";
@@ -132,12 +134,11 @@ function formatQueuedHint(r: { personal_queue?: boolean; queue_position?: number
   }
   return formatQueueHint(r.queue_position);
 }
+// Свой знак из branding/ (logo.png, затем logo.svg), иначе — знак Rowlore.
 const BRAND_LOGO_CANDIDATES = [
   "/branding/logo.png",
   "/branding/logo.svg",
-  "/review-pixel.png",
-  "/branding/logo-default.png",
-  "/logo-default.svg",
+  "/rowlore-mark.svg",
 ] as const;
 type ReadyPresetId = "fraud_individual" | "fraud_by_store";
 const READY_PRESET_IDS: ReadyPresetId[] = ["fraud_individual", "fraud_by_store"];
@@ -214,18 +215,6 @@ function statusLabel(status: string): string {
     case "failed": return uiText("Ошибка");
     case "canceled": return uiText("Отменён");
     default: return status;
-  }
-}
-
-function statusColor(status: string): "default" | "primary" | "success" | "warning" | "error" | "info" {
-  switch (status) {
-    case "running": return "warning";    // активное действие — амбра filled (полная насыщенность)
-    case "completed": return "success";  // зелёный — готово
-    case "paused": return "warning";     // outlined-амбра — синхронно с кнопкой «Пауза» (та же color="warning")
-    case "failed": return "error";       // красный — ошибка
-    case "canceled": return "default";   // серый — отменён пользователем (терминальное)
-    case "queued": return "info";        // голубой — нейтральное ожидание
-    default: return "default";
   }
 }
 
@@ -800,24 +789,26 @@ function RingProgress({
   const offset = circumference * (1 - clamped / 100);
 
   const gradId = `ring-grad-${status}-${uid}`;
-  const gradStops: Record<RingStatus, [string, string]> = {
-    running: ["#fb923c", "#ea580c"],
-    paused: ["#fdba74", "#ea580c"],
-    completed: ["#34d399", "#10b981"],
-    failed: ["#f87171", "#dc2626"],
-    queued: ["#60a5fa", "#2563eb"],
-    canceled: ["#cbd5e1", "#94a3b8"],
-    idle: ["#cbd5e1", "#94a3b8"],
+  // Цвет кольца — смысл статуса из tokens.css.
+  const tones: Record<RingStatus, string> = {
+    running: "var(--warn)",
+    paused: "var(--warn)",
+    completed: "var(--ok)",
+    failed: "var(--bad)",
+    queued: "var(--info)",
+    canceled: "var(--idle)",
+    idle: "var(--idle)",
   };
-  const [from, to] = gradStops[status];
+  const to = tones[status];
+  const from = `color-mix(in srgb, ${to} 70%, #fff)`;
 
   return (
     <div className={`ring-progress ring-status-${status}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
         <defs>
           <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={from} />
-            <stop offset="100%" stopColor={to} />
+            <stop offset="0%" style={{ stopColor: from }} />
+            <stop offset="100%" style={{ stopColor: to }} />
           </linearGradient>
         </defs>
         <circle
@@ -2151,8 +2142,8 @@ function App() {
     const done = Math.max(0, summary.success_rows || 0);
     const failed = Math.max(0, summary.failed_rows || 0);
     return [
-      { name: uiText("Успешно"), value: done, fill: "#1f9d69" },
-      { name: uiText("С ошибками"), value: failed, fill: "#d14334" },
+      { name: uiText("Успешно"), value: done, fill: "var(--ok)" },
+      { name: uiText("С ошибками"), value: failed, fill: "var(--bad)" },
     ];
   }, [activeResult]);
 
@@ -2220,20 +2211,27 @@ function App() {
   if (!user) {
     return (
       <Box className="page workspace-login">
-      <Box component="header" className="workspace-topbar">
-        <Box className="workspace-topbar-inner">
-          <Box className="workspace-brand">
-            <img src={logoSrc} alt="" width={32} height={32} className="workspace-brand-image" onError={handleLogoError} />
-            <Typography component="span" className="workspace-wordmark">Analyzer</Typography>
-          </Box>
-          <Tooltip title={mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема")}>
-            <IconButton className="workspace-icon-button" onClick={toggle} aria-label={mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема")}>
-              {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-            </IconButton>
-          </Tooltip>
-        </Box>
+      <Box className="login-aurora" aria-hidden="true" />
+      <Box className="login-tools">
+        <Tooltip title={mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема")}>
+          <IconButton className="workspace-icon-button" onClick={toggle} aria-label={mode === "dark" ? uiText("Светлая тема") : uiText("Тёмная тема")}>
+            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
+        </Tooltip>
       </Box>
       <Box component="main" className="workspace-login-content">
+          <Box className="login-brand">
+            <img
+              src={logoSrc === "/rowlore-mark.svg" ? "/rowlore-logo-256.png" : logoSrc}
+              alt=""
+              width={96}
+              height={96}
+              className="login-logo"
+              onError={handleLogoError}
+            />
+            <Typography component="div" className="login-wordmark">{PRODUCT_NAME}</Typography>
+            <Typography component="p" className="login-tagline">{uiText("Ad hoc аналитика таблиц с помощью ИИ")}</Typography>
+          </Box>
           <Card className="card login-card" sx={{ width: "100%", maxWidth: 480 }}>
             <CardContent>
               <Stack spacing={2}>
@@ -2326,12 +2324,14 @@ function App() {
       </Tooltip>
     </Stack>
   );
+  // Из блока пользователя внизу бокового меню аккаунт открывается вверх; из шапки — вниз.
+  const menuFromSidebar = Boolean(userMenuAnchor?.closest(".shell-nav")) && window.matchMedia("(min-width: 900px)").matches;
   const accountMenu = (<Menu
             anchorEl={userMenuAnchor}
             open={Boolean(userMenuAnchor)}
             onClose={() => setUserMenuAnchor(null)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            anchorOrigin={menuFromSidebar ? { vertical: "top", horizontal: "left" } : { vertical: "bottom", horizontal: "right" }}
+            transformOrigin={menuFromSidebar ? { vertical: "bottom", horizontal: "left" } : { vertical: "top", horizontal: "right" }}
             PaperProps={{ sx: { minWidth: 260 } }}
           >
             <Box sx={{ px: 2, py: 1.25 }}>
@@ -2394,7 +2394,7 @@ function App() {
             <Divider />
             <Box sx={{ px: 2, py: 0.75 }}>
               <Typography variant="caption" color="text.secondary">
-                {uiText("Analyzer · версия {0}", APP_VERSION)}
+                {uiText("Rowlore · версия {0}", APP_VERSION)}
               </Typography>
             </Box>
           </Menu>);
@@ -2474,13 +2474,25 @@ function App() {
           </DialogActions>
         </Dialog>);
   const rulesDialog = <UserRulesDialog open={rulesOpen} onClose={() => setRulesOpen(false)} />;
+  const roleLabel = user.role === "admin" ? uiText("Администратор") : accessState.is_manager ? uiText("Руководитель") : uiText("Пользователь");
+  const shellFooter = <ShellFooter
+    mode={mode}
+    onToggleTheme={toggle}
+    name={user.full_name || user.username}
+    caption={roleLabel}
+    menuOpen={Boolean(userMenuAnchor)}
+    onOpenMenu={(e) => setUserMenuAnchor(e.currentTarget)}
+    onLogout={doLogout}
+  />;
+  const brand = <Brand logoSrc={logoSrc} onLogoError={handleLogoError} />;
   if (!accessState.has_access) return <>
     <AccessPage state={accessState} logout={doLogout} logoSrc={logoSrc} accountActions={<>{accountButton}{accountMenu}</>} />
     {releaseDialog}{rulesDialog}
   </>;
 
   if (canManage && locationHash.startsWith("#/admin")) return <AdminScreen
-    isAdmin={user.role === "admin"} userId={user.id} hash={locationHash} menuButton={accountButton} accountMenu={<>{accountMenu}{releaseDialog}{rulesDialog}</>} logoSrc={logoSrc}
+    isAdmin={user.role === "admin"} userId={user.id} hash={locationHash} brand={brand} shellFooter={shellFooter}
+    accountMenu={<>{accountMenu}{releaseDialog}{rulesDialog}</>}
     onChanged={() => { void loadUsage(); void accessCall<AccessState>("/access/status").then(applyAccessState); }} />;
 
   const sections = [
@@ -2491,38 +2503,45 @@ function App() {
     { id: "my-reports", label: uiText("Мои отчёты"), icon: <FolderOpenIcon fontSize="small" /> },
   ];
   const selectedSection = sections.find((section) => `#${section.id}` === locationHash)?.id ?? sections[0].id;
+  // Шаги мастера в меню: пройденный шаг отмечается галочкой.
+  const workflowSteps: Record<string, { step: number; done: boolean }> = {
+    "data-import": { step: 1, done: Boolean(fileInfo) && fileInspectStatus === "ready" && Boolean(model) },
+    "prompt-template": { step: 2, done: Boolean(promptEditorValue.trim()) },
+    "analysis-run": { step: 3, done: selectedLaunchStatus === "completed" },
+  };
 
   return (
-    <Box className="page workspace-page">
-      <a className="workspace-skip" href="#workspace-main">{uiText("К анализу")}</a>
-      <Box component="header" className="workspace-topbar">
-        <Box className="workspace-topbar-inner">
-          <Box className="workspace-brand">
-            <img src={logoSrc} alt="" width={32} height={32} className="workspace-brand-image" onError={handleLogoError} />
-            <Typography component="span" className="workspace-wordmark">Analyzer</Typography>
-          </Box>
-          {accountButton}
-          {accountMenu}
-        </Box>
-      </Box>
-        <Box component="main" className="workspace-main workspace-layout" id="workspace-main" tabIndex={-1}>
-          <Box className="workspace-intro">
-            <Typography component="h1">{uiText("Анализ отзывов")}</Typography>
-          </Box>
-        <Box component="nav" className="workspace-nav" aria-label={uiText("Разделы анализа")}>
-          {sections.map((section) => (
-            <a key={section.id} href={`#${section.id}`} aria-current={selectedSection === section.id ? "location" : undefined}>
-              {section.icon}
-              <span>{section.label}</span>
-            </a>
-          ))}
-          {canManage && (
-            <a className="workspace-nav-management" href="#/admin">
-              <SettingsIcon fontSize="small" />
-              <span>{user.role === "admin" ? uiText("Управление") : uiText("Мои группы")}</span>
-            </a>
-          )}
-        </Box>
+    <>
+    <AppShell
+      className="workspace-page"
+      navLabel={uiText("Разделы анализа")}
+      brand={brand}
+      mainId="workspace-main"
+      skipLabel={uiText("К анализу")}
+      nav={<>
+        {sections.map((section) => (
+          <ShellLink
+            key={section.id}
+            href={`#${section.id}`}
+            current={selectedSection === section.id}
+            icon={section.icon}
+            label={section.label}
+            step={workflowSteps[section.id]?.step}
+            done={workflowSteps[section.id]?.done}
+          />
+        ))}
+        {canManage && <>
+          <span className="shell-divider" aria-hidden="true" />
+          <ShellLink
+            href="#/admin"
+            icon={<SettingsIcon fontSize="small" />}
+            label={user.role === "admin" ? uiText("Администрирование") : uiText("Мои группы")}
+          />
+        </>}
+      </>}
+      footer={<>{shellFooter}{accountMenu}</>}
+    >
+          <ShellHead title={uiText("Анализ отзывов")} />
           {user.role === "admin" && modelCatalogReady && providers.length === 0 && <ModelSetupNotice isAdmin />}
         {accessState.has_access && (
         <Card className="card workspace-section" id="data-import">
@@ -3400,12 +3419,10 @@ function App() {
                           <span className="meta-unit">{progress.unit}</span>
                         </Box>
                         <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-                          <Chip
-                            size="small"
+                          <ReportStatusChip
+                            report={selectedLaunchReport}
                             label={selectedLaunchReport.status_label || statusLabel(selectedLaunchReport.status)}
                             title={selectedLaunchReport.retry_hint || undefined}
-                            color={selectedLaunchReport.all_rows_failed ? "error" : selectedLaunchReport.has_errors && selectedLaunchReport.status === "completed" ? "warning" : statusColor(selectedLaunchReport.status)}
-                            variant={["running", "completed"].includes(selectedLaunchReport.status) ? "filled" : "outlined"}
                           />
                           {etaLabel && (
                             <Box className="meta-eta">
@@ -3696,12 +3713,10 @@ function App() {
                         <Typography variant="caption" color="text.secondary">{fmtDate(r.created_at)}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          size="small"
+                        <ReportStatusChip
+                          report={r}
                           label={r.status_label || statusLabel(r.status)}
                           title={r.retry_hint || undefined}
-                          color={r.all_rows_failed ? "error" : r.has_errors && r.status === "completed" ? "warning" : statusColor(r.status)}
-                          variant={r.status === "running" || r.status === "completed" ? "filled" : "outlined"}
                         />
                       </TableCell>
                       <TableCell>
@@ -3757,7 +3772,7 @@ function App() {
                               <div>{uiText("Лимит строк:") + " "}<b>{r.max_reviews ?? "-"}</b></div>
                               <div>{uiText("Температура:") + " "}<b>{r.temperature ?? "-"}</b></div>
                               {r.group_by_column && (<div>{uiText("Группировка:") + " "}<b>{r.group_by_column}</b></div>)}
-                              <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.18)", mt: 1, pt: 1 }} />
+                              <Box sx={{ borderTop: "1px solid var(--line-strong)", mt: 1, pt: 1 }} />
                               <Box sx={{ opacity: 0.7, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, mb: 0.5 }}>{uiText("Использовано токенов")}</Box>
                               <div>{uiText("Запрос:") + " "}<b>{formatTokenExact(r.prompt_tokens)}</b></div>
                               <div>{uiText("Ответ:") + " "}<b>{formatTokenExact(r.completion_tokens)}</b></div>
@@ -3866,13 +3881,7 @@ function App() {
                     py: 0.5,
                     borderRadius: 999,
                     transition: "background-color 180ms ease, color 180ms ease",
-                    "&:hover": {
-                      backgroundColor: (theme) =>
-                        theme.palette.mode === "dark"
-                          ? "rgba(255,255,255,0.06)"
-                          : "rgba(15,23,42,0.04)",
-                      color: "text.primary",
-                    },
+                    "&:hover": { backgroundColor: "var(--surface-2)", color: "text.primary" },
                   }}
                 >
                   {showAllReports ? uiText("Свернуть") : uiText("Показать ещё {0}", reports.length - 3)}
@@ -3883,7 +3892,7 @@ function App() {
         </Card>
         )}
 
-      </Box>
+    </AppShell>
         {releaseDialog}
         {rulesDialog}
         <Drawer
@@ -4018,7 +4027,7 @@ function App() {
             {actionToast?.message || ""}
           </Alert>
         </Snackbar>
-    </Box>
+    </>
   );
 }
 
